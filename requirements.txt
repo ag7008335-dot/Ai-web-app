@@ -6,3 +6,4 @@ Pillow
 fastapi
 uvicorn
 pydantic
+requests
