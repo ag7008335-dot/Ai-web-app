@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sportify AI — Ai Tests v1.0</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+
+<!-- ═══ Test Selection Overlay (First View) ═══ -->
+<div id="testSelectOverlay" class="test-select-overlay">
+    <div class="test-select-panel">
+        <div class="test-select-header">
+            <span class="test-select-kicker">Sportify AI</span>
+            <h2 class="test-select-title">What would you like to test?</h2>
+            <p class="test-select-subtitle">
+                First choose who is using the tool, then pick the test.
+            </p>
+            <div class="test-role-toggle">
+                <button class="test-role-pill active" type="button" data-role="guest">
+                    <span class="test-role-label">Guest</span>
+                </button>
+                <button class="test-role-pill" type="button" data-role="coach">
+                    <span class="test-role-label">Coach</span>
+                </button>
+            </div>
+        </div>
+        <div class="test-select-body">
+            <!-- Guest name panel -->
+            <div class="guest-name-panel" id="guestNamePanel">
+                <p class="guest-name-title">Guest athlete</p>
+                <div class="guest-name-grid">
+                    <input id="guestFullNameInput" type="text" placeholder="Full name (name & surname)" autocomplete="off" />
+                </div>
+            </div>
+
+            <!-- Coach login panel -->
+            <div class="coach-login-panel" id="coachLoginPanel">
+                <h3 class="coach-login-title">Coach access</h3>
+                <p class="coach-login-subtitle">
+                    Enter the coach access key to unlock advanced tools.
+                </p>
+                <div class="coach-login-grid">
+                    <div class="coach-login-field">
+                        <label for="coachAccessKeyInput">Access key</label>
+                        <input
+                            id="coachAccessKeyInput"
+                            name="coach_access_key"
+                            type="password"
+                            placeholder="Enter coach access key"
+                            autocomplete="new-password"
+                            spellcheck="false"
+                        />
+                    </div>
+                    <div class="coach-login-actions">
+                        <button type="button" class="coach-login-btn" id="btnCoachLogin">
+                            <span>Unlock coach mode</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Test cards -->
+            <div class="test-select-grid">
+                <!-- Vertical Jump Card -->
+                <button class="test-card" data-test="vertical_jump" type="button">
+                    <div class="test-card-badge">Vertical Jump Pro</div>
+                    <div class="test-card-main">
+                        <div class="test-card-icon">⬆️</div>
+                        <div class="test-card-text">
+                            <h3>Vertical Jump</h3>
+                            <p>Measure vertical jump height, flight time and jump history using MediaPipe.</p>
+                        </div>
+                    </div>
+                    <div class="test-card-footer">
+                        <span class="test-card-cta">Start test</span>
+                        <span class="test-card-arrow">➜</span>
+                    </div>
+                </button>
+
+                <!-- Demo Test Card -->
+                <button class="test-card test-card-secondary" data-test="demo" type="button">
+                    <div class="test-card-badge badge-secondary">Demo</div>
+                    <div class="test-card-main">
+                        <div class="test-card-icon">🎬</div>
+                        <div class="test-card-text">
+                            <h3>Demo Test</h3>
+                            <p>Quick demo mode to try things out without saving any results.</p>
+                        </div>
+                    </div>
+                    <div class="test-card-footer">
+                        <span class="test-card-cta">Run demo</span>
+                        <span class="test-card-arrow">➜</span>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ Background Effects ═══ -->
+<div class="bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+</div>
+
+<!-- ═══ Main App Wrapper ═══ -->
+<div class="app-wrapper blurred">
+
+    <!-- ══════════════════════════════════════
+         HEADER
+         ══════════════════════════════════════ -->
+    <header class="app-header">
+        <div class="header-brand">
+            <div class="brand-glow-ring">
+                <span class="brand-icon">⚡</span>
+            </div>
+            <div class="brand-text">
+                <div class="brand-main-row">
+                    <h1>Sportify AI</h1>
+                    <span class="brand-role-badge" id="brandRoleBadge">Coach mode</span>
+                    <div class="group-test-nav" id="groupTestNav" style="display:none;">
+                        <span class="group-test-group-badge" id="groupTestGroupBadge" title="گروه در حال تست">گروه</span>
+                        <span class="group-test-position" id="groupTestPosition" aria-live="polite">1 / 5</span>
+                        <button type="button" class="group-test-nav-btn" id="btnGroupPrev" title="Previous athlete">← Prev</button>
+                        <button type="button" class="group-test-nav-btn" id="btnGroupNext" title="Next athlete">Next →</button>
+                    </div>
+                </div>
+                <span class="brand-version">Ai Tests v1.0</span>
+            </div>
+        </div>
+        <div class="header-chips">
+            <div class="chip">
+                <span class="chip-icon">🧠</span>
+                <span class="chip-label">MediaPipe</span>
+                <span class="chip-value" id="mpStatus">Loading...</span>
+                <span class="chip-dot" id="mpDot"></span>
+            </div>
+            <div class="chip">
+                <span class="chip-icon">🖥️</span>
+                <span class="chip-label">Server</span>
+                <span class="chip-value" id="serverStatus">Checking...</span>
+                <span class="chip-dot" id="serverDot"></span>
+            </div>
+            <div class="chip chip-action" onclick="openTestSelection()">
+                <span class="chip-icon">🎯</span>
+                <span class="chip-label">Tests</span>
+                <span class="chip-value">Change test</span>
+            </div>
+            <div class="chip chip-action" id="btnCoachAthleteList" style="display:none;">
+                <span class="chip-icon">👥</span>
+                <span class="chip-label">Athletes</span>
+                <span class="chip-value">List athletes</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- ══════════════════════════════════════
+         CDN FAIL NOTICE (hidden by default)
+         ══════════════════════════════════════ -->
+    <div class="notice-banner" id="cdnFailNotice" style="display:none;">
+        <span class="notice-icon">⚠️</span>
+        <div class="notice-text">
+            <strong>CDN Failed</strong>
+            <p>MediaPipe couldn't load. Check your internet or firewall settings.</p>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         MAIN CONTENT — Two Column Layout
+         ══════════════════════════════════════ -->
+    <div class="main-content-layout">
+
+        <!-- ─── LEFT: Video Section ─── -->
+        <div class="content-main">
+            <section class="section-video">
+                <div class="section-title-bar">
+                    <h2><span class="sec-icon">📹</span> Live Camera</h2>
+                    <div class="title-bar-actions">
+                        <div class="camera-select-wrapper">
+                            <select id="cameraSelect" class="camera-select">
+                                <option value="">Default camera</option>
+                            </select>
+                        </div>
+                        <div class="video-tool-btns">
+                            <button class="video-tool-btn" id="btnMirror" title="Mirror">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="7 2 3 6 7 10"/>
+                                    <polyline points="17 2 21 6 17 10"/>
+                                    <path d="M21 6H3"/>
+                                    <line x1="12" y1="14" x2="12" y2="22" stroke-dasharray="2 2"/>
+                                </svg>
+                            </button>
+                            <button class="video-tool-btn" id="btnRotate" title="Rotate 90°">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="1 4 1 10 7 10"/>
+                                    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <button class="btn-connect" id="btnStart" onclick="startAll()">
+                            <span class="btn-connect-dot"></span>
+                            <span>Connect Camera</span>
+                        </button>
+                        <button class="btn-disconnect" id="btnStopAll" onclick="stopAll()" style="display:none;">
+                            <span class="btn-disconnect-dot"></span>
+                            <span>Disconnect</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="video-merged-container">
+                    <div class="video-dual-layout">
+
+                        <!-- ── Panel 1: Raw Camera Feed ── -->
+                        <div class="video-merged-frame video-raw-frame">
+                            <video id="webcamVideo" autoplay playsinline muted></video>
+                            <div class="smart-dark-overlay" id="smartDarkOverlay"></div>
+                            <div class="test-countdown-overlay" id="testCountdownOverlay"></div>
+                            <div class="frame-label">
+                                <span class="frame-label-dot" id="rawLiveDot"></span>
+                                <span class="frame-label-icon">📷</span>
+                                <span class="frame-label-text">Camera</span>
+                                <span class="frame-label-res" id="mergedResBadge">—</span>
+                            </div>
+                            <div class="video-placeholder" id="placeholderRaw">
+                                <div class="placeholder-content">
+                                    <span class="placeholder-icon">📷</span>
+                                    <span>Click <strong>Connect Camera</strong> to start</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ── Panel 2: Skeleton & Jump Analysis ── -->
+                        <div class="video-merged-frame video-skeleton-frame">
+                            <canvas id="outputCanvas"></canvas>
+                            <div class="fps-badge" id="fpsBadgeOverlay">
+                                <span class="fps-badge-value" id="fpsBadgeValue">0</span>
+                                <span class="fps-badge-label">FPS</span>
+                            </div>
+                            <div class="frame-label">
+                                <span class="frame-label-icon">🦴</span>
+                                <span class="frame-label-text">Analysis</span>
+                            </div>
+                            <div class="video-placeholder" id="placeholderSkeleton">
+                                <div class="placeholder-content">
+                                    <span class="placeholder-icon">🦴</span>
+                                    <span>Skeleton &amp; Jump Analysis</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ─── RIGHT: Jump Detail Sidebar ─── -->
+        <aside class="sidebar-right" id="jumpSidebar">
+
+            <!-- Jump Counter Card -->
+            <div class="sidebar-card sidebar-card-main">
+                <div class="sidebar-card-header">
+                    <span class="sidebar-card-icon">⬆️</span>
+                    <h3>Jump Counter</h3>
+                </div>
+                <div class="sidebar-card-body">
+                    <div class="jump-counter-layout">
+                        <div class="jump-counter-left">
+                            <div class="jump-timer-label">Time left</div>
+                            <div class="jump-timer-value" id="testTimeRemainingLabel">0.0s</div>
+                            <div class="jump-status-chip" id="testStatusLabel">Idle</div>
+                        </div>
+                        <div class="jump-counter-right">
+                            <div class="jump-big-counter">
+                                <span class="jump-big-number" id="jumpCount">0</span>
+                                <span class="jump-big-label">Jumps</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="jump-timing-row">
+                        <div class="jump-timing-item">
+                            <span class="jump-timing-label">Test time</span>
+                            <div class="jump-timing-controls">
+                                <input id="testDurationInput" class="jump-timing-input" type="number" min="3" max="600" value="10" />
+                                <span class="jump-timing-unit">s</span>
+                            </div>
+                        </div>
+                        <div class="jump-timing-item">
+                            <span class="jump-timing-label">Countdown</span>
+                            <div class="jump-timing-controls">
+                                <input id="countdownInput" class="jump-timing-input" type="number" min="0" max="10" value="3" />
+                                <span class="jump-timing-unit">s</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="jump-timing-row">
+                        <div class="jump-timing-item">
+                            <span class="jump-timing-label">Start on first jump</span>
+                            <label class="toggle-label">
+                                <input type="checkbox" id="startOnFirstJumpToggle">
+                                <span class="toggle-switch"></span>
+                                <span class="toggle-text">Timer starts after first jump</span>
+                            </label>
+                        </div>
+                    </div>
+                    <button class="btn-toggle-jump" id="btnToggleJump" onclick="toggleJumpDetection()" disabled>
+                        <span class="btn-toggle-jump-icon" id="btnToggleJumpIcon">▶</span>
+                        <span id="btnToggleJumpText">Start Test</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Jump Status Card -->
+            <!-- <div class="sidebar-card">
+                <div class="sidebar-card-header">
+                    <span class="sidebar-card-icon">📡</span>
+                    <h3>Status</h3>
+                </div>
+                <div class="sidebar-card-body">
+                    <div class="jump-status-indicator" id="jumpStatusIndicator">
+                        <span class="status-dot" id="jumpStatusDot"></span>
+                        <span class="status-text" id="jumpStatus">Ready</span>
+                    </div>
+                </div>
+            </div> -->
+
+            <!-- Last Jump + Test Report (Tabbed) -->
+            <div class="sidebar-card">
+                <div class="sidebar-card-header sidebar-card-header-tabs">
+                    <div class="sidebar-tabs">
+                        <button class="sidebar-tab active" data-tab="lastJumpTab">
+                            <span class="sidebar-tab-icon">📊</span>
+                            <span class="sidebar-tab-label">Last Jump</span>
+                        </button>
+                        <button class="sidebar-tab" data-tab="testReportTab">
+                            <span class="sidebar-tab-icon">📄</span>
+                            <span class="sidebar-tab-label">Test Report</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="sidebar-card-body">
+                    <div class="sidebar-tab-panel active" id="lastJumpTab">
+                        <div class="stat-grid">
+                            <div class="stat-cell">
+                                <span class="stat-cell-icon">📏</span>
+                                <span class="stat-cell-value" id="jumpHeight">— cm</span>
+                                <span class="stat-cell-label">Height</span>
+                            </div>
+                            <div class="stat-cell">
+                                <span class="stat-cell-icon">⏱️</span>
+                                <span class="stat-cell-value" id="jumpFlightTime">— ms</span>
+                                <span class="stat-cell-label">Flight Time</span>
+                            </div>
+                            <div class="stat-cell">
+                                <span class="stat-cell-icon">🏔️</span>
+                                <span class="stat-cell-value" id="jumpMaxHeight">— cm</span>
+                                <span class="stat-cell-label">Max Height</span>
+                            </div>
+                            <div class="stat-cell">
+                                <span class="stat-cell-icon">📈</span>
+                                <span class="stat-cell-value" id="jumpAvgHeight">— cm</span>
+                                <span class="stat-cell-label">Avg Height</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sidebar-tab-panel" id="testReportTab">
+                        <div class="test-report-summary" id="testReportSummary">
+                            No test report yet. Run a timed test to see the summary here.
+                        </div>
+                        <div class="test-report-details" id="testReportDetails"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar Footer -->
+            <div class="sidebar-footer">
+                <span class="sidebar-footer-text">Powered by Sportify 2026</span>
+            </div>
+
+        </aside>
+
+</div><!-- /main-content-layout -->
+
+</div><!-- /app-wrapper -->
+
+<!-- ═══ Test Summary Modal ═══ -->
+<div class="modal-backdrop" id="testSummaryModal" aria-hidden="true">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3 class="modal-title">Test Summary</h3>
+            <button class="modal-close-btn" id="closeTestSummaryModal" type="button">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-summary-text" id="testSummaryModalHeader">
+                No jumps recorded for this test.
+            </div>
+            <div class="modal-jump-list-wrapper" id="testSummaryModalList"></div>
+            <div class="modal-options-row">
+                <label class="modal-checkbox-label">
+                    <input type="checkbox" id="includeSnapshotsForPdf" checked>
+                    <span>Add apex snapshots to PDF</span>
+                </label>
+            </div>
+            <div class="modal-footer">
+                <div class="send-to-server-block" id="sendToServerBlock" style="display: none;">
+                    <div class="modal-footer-status" id="sendToServerStatus" aria-live="polite"></div>
+                </div>
+                <div class="modal-footer-buttons">
+                    <button class="modal-export-btn" id="btnExportTestSummaryPdf" type="button">
+                        <span class="modal-export-icon">📄</span>
+                        <span class="modal-export-label">Save as PDF</span>
+                    </button>
+                    <span class="modal-footer-btn-wrap" id="sendToServerBtnWrap" style="display: none;">
+                        <button class="modal-export-btn modal-export-btn--secondary" id="btnSendJumpResultsToServer" type="button">
+                            <span class="modal-export-icon">☁</span>
+                            <span class="modal-export-label">Save to site</span>
+                        </button>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ Athlete List Modal (Coach Dashboard) ═══ -->
+<div class="modal-backdrop" id="athleteListModal" aria-hidden="true">
+    <div class="modal-card modal-card--athlete-dashboard">
+        <div class="modal-header">
+            <h3 class="modal-title">Athletes</h3>
+            <button class="modal-close-btn" id="closeAthleteListModal" type="button">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="athlete-dashboard-toolbar">
+                <div class="athlete-dashboard-row athlete-dashboard-row--group">
+                    <label for="athleteGroupSelect" class="athlete-group-label">Group / team</label>
+                    <select id="athleteGroupSelect" class="athlete-group-select">
+                        <option value="">All groups</option>
+                    </select>
+                    <button type="button" class="athlete-group-run-btn" id="btnGroupRunTest">
+                        Run group test
+                    </button>
+                </div>
+                <input type="text" id="athleteSearchInput" class="athlete-dashboard-search" placeholder="Search by name, email, phone..." autocomplete="off" />
+                <div class="athlete-dashboard-selected" id="athleteDashboardSelected">
+                    Double-click a row to select.
+                </div>
+            </div>
+            <div class="modal-summary-text" id="athleteListHeader">
+                No athletes loaded yet.
+            </div>
+            <div class="modal-jump-list-wrapper athlete-dashboard-list" id="athleteListBody">
+                <!-- Athlete rows rendered here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ Toast Container ═══ -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ═══ Debug Modal ═══ -->
+<pre class="debug-box" id="debugBox" style="display:none;"></pre>
+
+<!-- ═══ Scripts ═══ -->
+<script type="module" src="/static/app.js"></script>
+
+</body>
+</html>
